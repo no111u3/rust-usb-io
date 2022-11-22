@@ -1,0 +1,1 @@
+[USB in a NutShell](https://www.beyondlogic.org/usbnutshell/usb1.shtml)

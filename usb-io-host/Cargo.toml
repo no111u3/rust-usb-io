@@ -1,0 +1,8 @@
+[package]
+name = "usb-io-host"
+version = "0.1.0"
+edition = "2021"
+authors = ["no111u3"]
+
+[dependencies]
+usb-io = { version = "0.1", path = "../usb-io", features = ["std"]}

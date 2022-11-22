@@ -1,0 +1,20 @@
+[workspace]
+members = [
+	"usb-io",
+	"usb-io-host",
+	"usb-io-target",
+]
+
+[patch.crates-io]
+
+[profile.release]
+opt-level = 'z'
+codegen-units = 1 # better optimizations
+debug = false     # symbols are nice and they don't increase the size on Flash
+lto = true        # better optimizations
+
+[profile.dev]
+opt-level = 'z'
+codegen-units = 1 # better optimizations
+debug = true      # symbols are nice and they don't increase the size on Flash
+lto = true        # better optimizations
