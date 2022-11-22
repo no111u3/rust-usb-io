@@ -9,7 +9,7 @@ use std::{
     vec::IntoIter,
 };
 
-use crate::{Message, MESSAGE_MAX_SIZE, PID, VID};
+use crate::{Message, MESSAGE_MAX_SIZE, PID, USB_IO_IN_ENDPOINT, USB_IO_OUT_ENDPOINT, VID};
 
 pub const TIMEOUT: Duration = Duration::from_secs(1);
 pub const EN_US: u16 = 0x0409;
@@ -209,11 +209,11 @@ impl UsbConnection {
     pub fn send_message(&mut self, message: Message) -> Result<usize, rusb::Error> {
         let mut buf = [0; MESSAGE_MAX_SIZE as usize];
         let slice = to_slice(&message, &mut buf).unwrap();
-        let nbytes = self
-            .handle
-            .lock()
-            .unwrap()
-            .write_bulk(0x1, slice, self.timeout)?;
+        let nbytes =
+            self.handle
+                .lock()
+                .unwrap()
+                .write_bulk(USB_IO_OUT_ENDPOINT, slice, self.timeout)?;
 
         if slice.len() == nbytes {
             Ok(nbytes)
@@ -232,7 +232,7 @@ impl UsbConnection {
                 .handle
                 .lock()
                 .unwrap()
-                .read_bulk(0x81, &mut buf, self.timeout)
+                .read_bulk(USB_IO_IN_ENDPOINT, &mut buf, self.timeout)
             {
                 Ok(_) => {
                     if let Ok(message) = from_bytes(&buf) {
