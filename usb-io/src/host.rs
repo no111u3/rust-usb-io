@@ -206,7 +206,7 @@ impl UsbConnection {
     }
 
     /// Write a bulk message to the USB-IO
-    pub fn send_message(&mut self, message: Message) -> Result<usize, rusb::Error> {
+    pub fn send_message(&self, message: Message) -> Result<usize, rusb::Error> {
         let mut buf = [0; MESSAGE_MAX_SIZE as usize];
         let slice = to_slice(&message, &mut buf).unwrap();
         let nbytes =
@@ -223,7 +223,7 @@ impl UsbConnection {
     }
 
     /// Receive a message
-    pub fn recv_message(&mut self) -> Result<Message, rusb::Error> {
+    pub fn recv_message(&self) -> Result<Message, rusb::Error> {
         // Allocate a buffer which is the maximum size we expect to receive
         let mut buf = [0; MESSAGE_MAX_SIZE as usize];
 
@@ -256,5 +256,10 @@ impl UsbConnection {
             }
         }
         Err(rusb::Error::Other)
+    }
+
+    pub fn request(&self, message: Message) -> Result<Message, rusb::Error> {
+        self.send_message(message)?;
+        self.recv_message()
     }
 }

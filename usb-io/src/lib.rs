@@ -17,9 +17,35 @@ pub const USB_IO_OUT_ENDPOINT: u8 = 0x1;
 pub const USB_IO_IN_ENDPOINT: u8 = 0x81;
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub enum Data {
+    U8(u8),
+    U16(u16),
+    U32(u32),
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub enum DataSize {
+    U8,
+    U16,
+    U32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum Message {
+    /// Ping ask
     Ping,
+    /// Ping answer
     Pong,
+    /// Acknow response
+    Ack,
+    /// Data response
+    Data(Data),
+    /// Set address to data
+    Set(u32, Data),
+    /// Get from address to data size
+    Get(u32, DataSize),
+    /// No operation (used for coverage testing and performance metrics)
+    Nop,
 }
 
 #[cfg(test)]

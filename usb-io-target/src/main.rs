@@ -3,10 +3,9 @@
 
 use panic_halt as _;
 
-#[rtic::app(device = stm32f4xx_hal::pac, peripherals = true, dispatchers = [USART1])]
+#[rtic::app(device = stm32f4xx_hal::pac, peripherals = true)]
 mod app {
     use stm32f4xx_hal::{
-        gpio::{Output, PC13},
         otg_fs::{UsbBus, UsbBusType, USB},
         pac,
         prelude::*,
@@ -24,9 +23,7 @@ mod app {
     }
 
     #[local]
-    struct Local {
-        led: PC13<Output>,
-    }
+    struct Local {}
 
     #[monotonic(binds = TIM2, default = true)]
     type MicrosecMono = MonoTimerUs<pac::TIM2>;
@@ -50,11 +47,8 @@ mod app {
             .freeze();
 
         let gpioa = dp.GPIOA.split();
-        let gpioc = dp.GPIOC.split();
-        let led = gpioc.pc13.into_push_pull_output();
 
         let mono = dp.TIM2.monotonic_us(&clocks);
-        tick::spawn().ok();
 
         // *** Begin USB setup ***
         let usb = USB {
@@ -72,17 +66,7 @@ mod app {
         let usb_io = UsbIoClass::new(unsafe { USB_BUS.as_ref().unwrap() });
         let usb_dev =
             usb_io.make_device(unsafe { USB_BUS.as_ref().unwrap() }, Some(device_id_hex()));
-        (
-            Shared { usb_dev, usb_io },
-            Local { led },
-            init::Monotonics(mono),
-        )
-    }
-
-    #[task(local = [led])]
-    fn tick(ctx: tick::Context) {
-        tick::spawn_after(1.secs()).ok();
-        ctx.local.led.toggle();
+        (Shared { usb_dev, usb_io }, Local {}, init::Monotonics(mono))
     }
 
     #[task(binds=OTG_FS, shared=[usb_dev, usb_io])]

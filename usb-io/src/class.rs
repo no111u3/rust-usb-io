@@ -4,7 +4,9 @@ use usb_device::class_prelude::*;
 use usb_device::device::{UsbDevice, UsbDeviceBuilder, UsbVidPid};
 use usb_device::Result;
 
-use crate::{Message, MANUFACTURER, MESSAGE_MAX_SIZE, PID, PRODUCT, SERIAL_NUMBER, VID};
+use crate::{
+    Data, DataSize, Message, MANUFACTURER, MESSAGE_MAX_SIZE, PID, PRODUCT, SERIAL_NUMBER, VID,
+};
 
 pub struct UsbIoClass<'a, B: UsbBus> {
     interface: InterfaceNumber,
@@ -59,7 +61,30 @@ impl<B: UsbBus> UsbClass<B> for UsbIoClass<'_, B> {
             if let Ok(message) = from_bytes(&buf) {
                 let return_message = match message {
                     Message::Ping => Message::Pong,
-                    Message::Pong => Message::Ping,
+                    Message::Set(address, data) => {
+                        unsafe {
+                            match data {
+                                Data::U8(b) => (address as *mut u8).write_volatile(b),
+                                Data::U16(b) => (address as *mut u16).write_volatile(b),
+                                Data::U32(b) => (address as *mut u32).write_volatile(b),
+                            }
+                        }
+                        Message::Ack
+                    }
+                    Message::Get(address, data_size) => unsafe {
+                        match data_size {
+                            DataSize::U8 => {
+                                Message::Data(Data::U8((address as *const u8).read_volatile()))
+                            }
+                            DataSize::U16 => {
+                                Message::Data(Data::U16((address as *const u16).read_volatile()))
+                            }
+                            DataSize::U32 => {
+                                Message::Data(Data::U32((address as *const u32).read_volatile()))
+                            }
+                        }
+                    },
+                    _ => Message::Nop,
                 };
 
                 let slice = to_slice(&return_message, &mut buf).unwrap();
