@@ -5,7 +5,8 @@ use usb_device::device::{UsbDevice, UsbDeviceBuilder, UsbVidPid};
 use usb_device::Result;
 
 use crate::{
-    Data, DataSize, Message, MANUFACTURER, MESSAGE_MAX_SIZE, PID, PRODUCT, SERIAL_NUMBER, VID,
+    message::{Data, DataSize, Message},
+    usb::{MANUFACTURER, MESSAGE_MAX_SIZE, PID, PRODUCT, SERIAL_NUMBER, VID},
 };
 
 pub struct UsbIoClass<'a, B: UsbBus> {

@@ -2,7 +2,7 @@ use std::thread::sleep;
 use std::time::Duration;
 use usb_io::{
     host::{Devices, TIMEOUT},
-    Data, DataSize, Message,
+    message::{Data, DataSize, Message},
 };
 
 fn main() {
