@@ -5,6 +5,10 @@ pub mod class;
 #[cfg(feature = "std")]
 pub mod host;
 
+pub mod memory_interface;
+
 pub mod message;
 
 pub mod usb;
+
+pub use memory_interface::{InfallibleMemoryInterface, MemoryInterface};

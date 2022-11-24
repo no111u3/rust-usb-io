@@ -5,7 +5,8 @@ use rusb::{Context, DeviceHandle};
 
 use crate::{
     host::Device,
-    message::Message,
+    memory_interface::MemoryInterface,
+    message::{Data, DataSize, Message},
     usb::{MESSAGE_MAX_SIZE, USB_IO_IN_ENDPOINT, USB_IO_OUT_ENDPOINT},
 };
 
@@ -106,5 +107,59 @@ impl Connection {
     pub fn request(&self, message: Message) -> Result<Message, rusb::Error> {
         self.send_message(message)?;
         self.recv_message()
+    }
+
+    pub fn ready_to_use(&self) -> bool {
+        if let Ok(Message::Pong) = self.request(Message::Ping) {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl MemoryInterface for Connection {
+    type Error = rusb::Error;
+
+    fn try_read8(&self, address: u32) -> Result<u8, Self::Error> {
+        let data = self.request(Message::Get(address, DataSize::U8))?;
+        if let Message::Data(Data::U8(data)) = data {
+            Ok(data)
+        } else {
+            Err(rusb::Error::Other)
+        }
+    }
+
+    fn try_read16(&self, address: u32) -> Result<u16, Self::Error> {
+        let data = self.request(Message::Get(address, DataSize::U16))?;
+        if let Message::Data(Data::U16(data)) = data {
+            Ok(data)
+        } else {
+            Err(rusb::Error::Other)
+        }
+    }
+
+    fn try_read32(&self, address: u32) -> Result<u32, Self::Error> {
+        let data = self.request(Message::Get(address, DataSize::U32))?;
+        if let Message::Data(Data::U32(data)) = data {
+            Ok(data)
+        } else {
+            Err(rusb::Error::Other)
+        }
+    }
+
+    fn try_write8(&self, address: u32, value: u8) -> Result<(), Self::Error> {
+        self.request(Message::Set(address, Data::U8(value)))?;
+        Ok(())
+    }
+
+    fn try_write16(&self, address: u32, value: u16) -> Result<(), Self::Error> {
+        self.request(Message::Set(address, Data::U16(value)))?;
+        Ok(())
+    }
+
+    fn try_write32(&self, address: u32, value: u32) -> Result<(), Self::Error> {
+        self.request(Message::Set(address, Data::U32(value)))?;
+        Ok(())
     }
 }
